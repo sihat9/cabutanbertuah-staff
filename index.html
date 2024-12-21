@@ -171,7 +171,7 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 8px;
       font-weight: 600;
-      margin-right: 30px; /* beri ruang sikit utk butang X */
+      margin-right: 30px; 
     }
     /* Tombol X di penjuru atas kanan container #searchResult */
     #closeSearchResult {
@@ -270,7 +270,8 @@
         <!-- Telefon -->
         <div class="form-group">
           <label for="telefon">No Telefon Peserta:</label>
-          <input type="tel" name="telefon" id="telefon" required placeholder="60123456789" />
+          <!-- Akan auto prefix '6' -->
+          <input type="tel" name="telefon" id="telefon" required placeholder="Contoh: 60123456789" />
         </div>
 
         <!-- Tarikh Daftar (Auto) -->
@@ -356,6 +357,21 @@
     const searchContent = document.getElementById('searchContent');
     const closeSearchResult = document.getElementById('closeSearchResult');
 
+    // 3) Pastikan No Telefon bermula dengan '6'
+    const phoneInput = document.getElementById('telefon');
+    phoneInput.addEventListener('focus', function(){
+      if (this.value.trim() === '') {
+        this.value = '6';
+      }
+    });
+    phoneInput.addEventListener('input', function(){
+      // Jika tidak bermula dengan '6', kita prefix
+      if (!this.value.startsWith('6')) {
+        // Buang semua leading '6' dan prefix sekali sahaja
+        this.value = '6' + this.value.replace(/^6+/, '');
+      }
+    });
+
     // =============== FUNGSI: Submit Form ===============
     staffForm.addEventListener('submit', async function(e){
       e.preventDefault(); 
@@ -403,9 +419,8 @@
       }
 
       // Buat panggilan AJAX ke Apps Script (contoh)
-      // Pastikan doGet/doPost di Apps Script menyokong pencarian IC
       try {
-        // Contoh: "type=search" menandakan kita mahu cari
+        // type=search menandakan kita mahu cari
         const url = GAS_URL + "?type=search&ic=" + encodeURIComponent(icVal);
         const res = await fetch(url);
         const result = await res.json();
