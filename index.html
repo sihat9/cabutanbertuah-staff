@@ -13,21 +13,52 @@
       margin: 0;
     }
 
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .top-bar h1 {
+      margin: 0;
+      font-size: 1.4em;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box input[type="text"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 0.95em;
+    }
+
+    .search-box button {
+      background: #5c5c5c;
+      color: #fff;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.95em;
+    }
+    .search-box button:hover {
+      background: #333;
+    }
+
     .container {
       max-width: 400px;
-      margin: 40px auto;
+      margin: 0 auto;
       background: #ffffff;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      position: relative;
       text-align: left; /* Supaya label & input rapat ke kiri */
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      font-size: 1.4em;
-      text-align: center;
     }
 
     .form-group {
@@ -55,7 +86,7 @@
       box-sizing: border-box;
     }
 
-    button {
+    button[type="submit"] {
       background: #008cba;
       color: #fff;
       padding: 12px 20px;
@@ -67,7 +98,7 @@
       margin-top: 10px;
     }
 
-    button:hover {
+    button[type="submit"]:hover {
       background: #005f6a;
     }
 
@@ -85,21 +116,41 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
       z-index: 9999;
     }
-
     .tick-icon {
       margin-right: 8px;
       font-weight: bold;
     }
+
+    /* Paparan hasil carian */
+    #searchResult {
+      margin-top: 20px;
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      display: none;
+    }
+    #searchResult h3 {
+      margin-top: 0;
+    }
+
   </style>
 </head>
 <body>
-  <!-- Kontena Notifikasi -->
+  <!-- Notifikasi "Tick Hijau" -->
   <div id="successToast">
     <span class="tick-icon">✔</span> Maklumat berjaya dihantar!
   </div>
 
-  <div class="container">
+  <!-- Bar Atas (Tajuk & Kotak Carian) -->
+  <div class="top-bar">
     <h1>Daftar Peserta (Staff)</h1>
+    <div class="search-box">
+      <input type="text" id="searchIc" placeholder="Cari No IC" />
+      <button id="btnSearch">Cari</button>
+    </div>
+  </div>
+
+  <div class="container">
     <form id="staffForm">
       <!-- Nama Penuh -->
       <div class="form-group">
@@ -125,7 +176,7 @@
         <input type="tel" name="telefon" id="telefon" required placeholder="60123456789" />
       </div>
 
-      <!-- Tarikh Daftar (Ditetapkan Auto) -->
+      <!-- Tarikh Daftar (Auto) -->
       <div class="form-group">
         <label for="tarikhDaftar">Tarikh Daftar:</label>
         <input type="date" name="tarikhDaftar" id="tarikhDaftar" required />
@@ -175,13 +226,19 @@
     </form>
   </div>
 
+  <!-- Paparan Hasil Carian -->
+  <div id="searchResult">
+    <h3>Maklumat Pelanggan</h3>
+    <div id="searchContent"></div>
+  </div>
+
   <script>
-    // 1) Set tarikh semasa pada kolom "tarikhDaftar" secara automatik
-    document.addEventListener("DOMContentLoaded", function() {
+    // 1) Set tarikh semasa pada kolom "tarikhDaftar"
+    document.addEventListener("DOMContentLoaded", function(){
       const dateInput = document.getElementById('tarikhDaftar');
       if (dateInput) {
         let today = new Date();
-        let isoDate = today.toISOString().substring(0, 10); // yyyy-mm-dd
+        let isoDate = today.toISOString().substring(0, 10); 
         dateInput.value = isoDate;
       }
     });
@@ -189,16 +246,21 @@
     // 2) Gantikan dengan URL Web App Google Apps Script anda
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxODgvgBITLnxFsYZ67kv7s1W7u1n9kyY11IWgG68OW0mzGkIJfhylRDAMKEA2uem63/exec";
 
+    // Komponen
     const staffForm = document.getElementById('staffForm');
     const successToast = document.getElementById('successToast');
+    const searchIcInput = document.getElementById('searchIc');
+    const btnSearch = document.getElementById('btnSearch');
+    const searchResult = document.getElementById('searchResult');
+    const searchContent = document.getElementById('searchContent');
 
-    staffForm.addEventListener('submit', async function(e) {
+    // =============== FUNGSI: Submit Form ===============
+    staffForm.addEventListener('submit', async function(e){
       e.preventDefault(); 
 
       // Kumpul data
       const formData = new FormData(staffForm);
 
-      // Hantar ke Google Apps Script
       try {
         const response = await fetch(GAS_URL, {
           method: 'POST',
@@ -207,25 +269,72 @@
         const result = await response.json();
 
         if(result.status === "success") {
-          // 1) Tunjuk notifikasi tick hijau
-          successToast.style.display = 'block'; 
-          // 2) Reset form untuk pendaftaran seterusnya
+          // Tunjuk notifikasi tick hijau
+          successToast.style.display = 'block';
+          // Reset form
           staffForm.reset();
-
-          // Tetapkan semula tarikh semasa selepas reset
+          // Tetapkan semula tarikh
           let today = new Date();
           let isoDate = today.toISOString().substring(0, 10);
           document.getElementById('tarikhDaftar').value = isoDate;
 
-          // 3) Sembunyikan semula notifikasi selepas beberapa saat
+          // Sembunyikan notifikasi selepas 3s
           setTimeout(() => {
             successToast.style.display = 'none';
-          }, 3000); // 3 saat
+          }, 3000);
+
         } else {
           alert(result.message || "Ralat tidak diketahui.");
         }
       } catch (err) {
         alert("Ralat: " + err.toString());
+      }
+    });
+
+    // =============== FUNGSI: Cari No IC ===============
+    btnSearch.addEventListener('click', async function(){
+      const icVal = searchIcInput.value.trim();
+      if (!icVal) {
+        alert("Sila masukkan No IC untuk cari.");
+        return;
+      }
+
+      // Buat panggilan AJAX ke Apps Script (contoh)
+      // Di Apps Script, anda perlu menulis logik doGet/doPost yang terima param IC dan balas maklumat.
+      try {
+        // Contoh: "type=search" menandakan kita mahu cari
+        const url = GAS_URL + "?type=search&ic=" + encodeURIComponent(icVal);
+        const res = await fetch(url);
+        const result = await res.json();
+
+        if (result.status === "not found") {
+          // Tiada rekod
+          searchResult.style.display = 'block';
+          searchContent.innerHTML = `<p>Rekod tidak dijumpai untuk IC: <b>${icVal}</b></p>`;
+        } else if (result.status === "success") {
+          // Terdapat rekod
+          const nama = result.nama || "Tidak diketahui";
+          const noIc = result.ic || icVal;
+          const tarikhDaftar = result.tarikhDaftar || "-";
+          const tarikhTamat = result.tarikhTamat || "-";
+          let baucer = result.baucer || "Tiada memenangi baucer";
+
+          // Papar
+          searchResult.style.display = 'block';
+          searchContent.innerHTML = `
+            <p><b>Nama:</b> ${nama}</p>
+            <p><b>No IC:</b> ${noIc}</p>
+            <p><b>Tarikh Daftar:</b> ${tarikhDaftar}</p>
+            <p><b>Tarikh Tamat Valid:</b> ${tarikhTamat}</p>
+            <p><b>Voucher:</b> ${baucer}</p>
+          `;
+        } else {
+          // status lain
+          searchResult.style.display = 'block';
+          searchContent.innerHTML = `<p>Ralat: ${result.message}</p>`;
+        }
+      } catch (err) {
+        alert("Ralat semasa mencari: " + err.toString());
       }
     });
   </script>
