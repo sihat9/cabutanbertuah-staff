@@ -125,7 +125,7 @@
         <input type="tel" name="telefon" id="telefon" required placeholder="60123456789" />
       </div>
 
-      <!-- Tarikh Daftar -->
+      <!-- Tarikh Daftar (Ditetapkan Auto) -->
       <div class="form-group">
         <label for="tarikhDaftar">Tarikh Daftar:</label>
         <input type="date" name="tarikhDaftar" id="tarikhDaftar" required />
@@ -176,13 +176,23 @@
   </div>
 
   <script>
-    // Gantikan dengan URL Web App Google Apps Script anda
+    // 1) Set tarikh semasa pada kolom "tarikhDaftar" secara automatik
+    document.addEventListener("DOMContentLoaded", function() {
+      const dateInput = document.getElementById('tarikhDaftar');
+      if (dateInput) {
+        let today = new Date();
+        let isoDate = today.toISOString().substring(0, 10); // yyyy-mm-dd
+        dateInput.value = isoDate;
+      }
+    });
+
+    // 2) Gantikan dengan URL Web App Google Apps Script anda
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxODgvgBITLnxFsYZ67kv7s1W7u1n9kyY11IWgG68OW0mzGkIJfhylRDAMKEA2uem63/exec";
 
     const staffForm = document.getElementById('staffForm');
     const successToast = document.getElementById('successToast');
 
-    staffForm.addEventListener('submit', async function(e){
+    staffForm.addEventListener('submit', async function(e) {
       e.preventDefault(); 
 
       // Kumpul data
@@ -201,6 +211,11 @@
           successToast.style.display = 'block'; 
           // 2) Reset form untuk pendaftaran seterusnya
           staffForm.reset();
+
+          // Tetapkan semula tarikh semasa selepas reset
+          let today = new Date();
+          let isoDate = today.toISOString().substring(0, 10);
+          document.getElementById('tarikhDaftar').value = isoDate;
 
           // 3) Sembunyikan semula notifikasi selepas beberapa saat
           setTimeout(() => {
