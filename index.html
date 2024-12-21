@@ -3,68 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daftar Peserta (Staff)</title>
+  <title>Daftar Peserta (Staff) - Klinik SihatSokmo</title>
   <style>
+    /* ========== ASAS LAMAN ========== */
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9fc;
-      text-align: center;
-      padding: 20px;
       margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f4f8;
+      color: #333;
     }
 
+    /* ========== HEADER / TOP-BAR ========== */
     .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      background: #0275d8; /* warna biru lembut */
+      color: #fff;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
     .top-bar h1 {
       margin: 0;
       font-size: 1.4em;
+      font-weight: 500;
+      letter-spacing: 0.5px;
     }
 
+    /* Cari IC Box (bahagian kanan top-bar) */
     .search-box {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 5px;
     }
-
     .search-box input[type="text"] {
-      padding: 8px;
+      padding: 8px 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
       font-size: 0.95em;
+      min-width: 150px;
+      box-sizing: border-box;
     }
-
     .search-box button {
-      background: #5c5c5c;
+      background: #5a6268;
       color: #fff;
-      padding: 8px 12px;
+      padding: 8px 14px;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 0.95em;
+      transition: background 0.2s;
     }
     .search-box button:hover {
-      background: #333;
+      background: #44494d;
     }
 
-    .container {
-      max-width: 400px;
+    /* ========== KANDUNGAN ========== */
+    .page-content {
+      max-width: 1000px;
       margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      /* Kita letak 2 kolum: Form di kiri, Result di kanan */
+    }
+
+    /* ========== FORM (KIRI) ========== */
+    .container {
+      flex: 1;
       background: #ffffff;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: left; /* Supaya label & input rapat ke kiri */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    h2.form-title {
+      margin-top: 0;
+      font-size: 1.2em;
+      margin-bottom: 1em;
+      color: #0275d8;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
     }
 
     .form-group {
       margin-bottom: 15px;
     }
-
     .form-group label {
       display: block;
       margin-bottom: 5px;
@@ -72,7 +96,6 @@
       color: #555;
       font-size: 0.95em;
     }
-
     .form-group input[type="text"],
     .form-group input[type="tel"],
     .form-group input[type="date"],
@@ -81,37 +104,59 @@
       padding: 10px;
       margin: 0;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
       font-size: 0.95em;
       box-sizing: border-box;
     }
 
     button[type="submit"] {
-      background: #008cba;
+      background: #0275d8;
       color: #fff;
       padding: 12px 20px;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 1em;
-      width: 100%;
       margin-top: 10px;
+      width: 100%;
+      transition: background 0.2s;
     }
-
     button[type="submit"]:hover {
-      background: #005f6a;
+      background: #025aa5;
     }
 
-    /* Notifikasi (tick hijau) di kanan atas */
+    /* ========== PAPARAN CARIAN (KANAN) ========== */
+    #searchResult {
+      flex: 1;
+      min-height: 200px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: none; /* mula-mula disorok */
+    }
+    #searchResult h3 {
+      margin-top: 0;
+      font-size: 1.1em;
+      color: #0275d8;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+    #searchContent p {
+      line-height: 1.4em;
+      margin: 8px 0;
+    }
+
+    /* ========== NOTIFIKASI (tick hijau) ========== */
     #successToast {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #4CAF50; /* hijau */
+      background: #5cb85c; /* hijau */
       color: #fff;
       padding: 12px 20px;
       border-radius: 5px;
-      display: none; /* Mula-mula disorok */
+      display: none; /* mula-mula disorok */
       font-size: 0.95em;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
       z-index: 9999;
@@ -120,117 +165,112 @@
       margin-right: 8px;
       font-weight: bold;
     }
-
-    /* Paparan hasil carian */
-    #searchResult {
-      margin-top: 20px;
-      background: #f0f0f0;
-      padding: 15px;
-      border-radius: 5px;
-      display: none;
-    }
-    #searchResult h3 {
-      margin-top: 0;
-    }
-
   </style>
 </head>
 <body>
-  <!-- Notifikasi "Tick Hijau" -->
-  <div id="successToast">
-    <span class="tick-icon">✔</span> Maklumat berjaya dihantar!
-  </div>
 
   <!-- Bar Atas (Tajuk & Kotak Carian) -->
   <div class="top-bar">
-    <h1>Daftar Peserta (Staff)</h1>
+    <h1>Daftar Peserta (Staff) - Klinik SihatSokmo</h1>
     <div class="search-box">
       <input type="text" id="searchIc" placeholder="Cari No IC" />
       <button id="btnSearch">Cari</button>
     </div>
   </div>
 
-  <div class="container">
-    <form id="staffForm">
-      <!-- Nama Penuh -->
-      <div class="form-group">
-        <label for="namaPenuh">Nama Penuh:</label>
-        <input type="text" name="namaPenuh" id="namaPenuh" required />
-      </div>
-
-      <!-- Nama Panggilan -->
-      <div class="form-group">
-        <label for="namaPanggilan">Nama Panggilan:</label>
-        <input type="text" name="namaPanggilan" id="namaPanggilan" required />
-      </div>
-
-      <!-- No IC -->
-      <div class="form-group">
-        <label for="ic">No IC:</label>
-        <input type="text" name="ic" id="ic" required />
-      </div>
-
-      <!-- Telefon -->
-      <div class="form-group">
-        <label for="telefon">No Telefon Peserta:</label>
-        <input type="tel" name="telefon" id="telefon" required placeholder="60123456789" />
-      </div>
-
-      <!-- Tarikh Daftar (Auto) -->
-      <div class="form-group">
-        <label for="tarikhDaftar">Tarikh Daftar:</label>
-        <input type="date" name="tarikhDaftar" id="tarikhDaftar" required />
-      </div>
-
-      <!-- Baucer Dimenangi -->
-      <div class="form-group">
-        <label for="baucer">Baucer Dimenangi (jika ada):</label>
-        <input list="voucherList" name="baucer" id="baucer" placeholder="Taip untuk cadangan..." />
-        <datalist id="voucherList">
-          <option value="consultation discount RM5">
-          <option value="consultation discount RM10">
-          <option value="consultation discount RM15">
-          <option value="consultation free">
-          <option value="ECG discount RM5">
-          <option value="ECG discount RM10">
-          <option value="ECG discount RM15">
-          <option value="ECG Free">
-          <option value="Audiometry discount RM5">
-          <option value="Audiometry Discount RM10">
-          <option value="Audiometry Discount RM15">
-          <option value="Audiometry Free">
-          <option value="Scan (Abd/Pregnant) Discount 5">
-          <option value="Scan (Abd/pregnant) discount RM10">
-          <option value="scan (Abd/Pregnant) discount RM15">
-          <option value="Scan (Abd/pregnant) Free">
-          <option value="HBA1c discount RM5">
-          <option value="HBA1c discount RM10">
-          <option value="HBA1c discount RM15">
-          <option value="Suction / Nebulizer Discount RM5">
-          <option value="Suction / Nebulizer discount RM10">
-          <option value="Suction / Nebulizer discount RM15">
-          <option value="Fbc dicount RM5">
-          <option value="fbc discount RM10">
-          <option value="IV drip discount RM5">
-          <option value="IV drip discount RM10">
-          <option value="IV drip discount RM15">
-          <option value="Blood taking BHS-1 RM50 only">
-          <option value="Susu Farm Fresh Free (2 kotak)">
-          <option value="Free Baju T-shirt">
-          <option value="Free Jug">
-          <option value="Free tupperware">
-        </datalist>
-      </div>
-
-      <button type="submit">Hantar</button>
-    </form>
+  <!-- Notifikasi "Tick Hijau" -->
+  <div id="successToast">
+    <span class="tick-icon">✔</span> Maklumat berjaya dihantar!
   </div>
 
-  <!-- Paparan Hasil Carian -->
-  <div id="searchResult">
-    <h3>Maklumat Pelanggan</h3>
-    <div id="searchContent"></div>
-  </div>
+  <!-- Kandungan Halaman (2 kolum) -->
+  <div class="page-content">
+
+    <!-- Form Daftar (Kiri) -->
+    <div class="container">
+      <h2 class="form-title">Pendaftaran Peserta</h2>
+      <form id="staffForm">
+        <!-- Nama Penuh -->
+        <div class="form-group">
+          <label for="namaPenuh">Nama Penuh:</label>
+          <input type="text" name="namaPenuh" id="namaPenuh" required />
+        </div>
+
+        <!-- Nama Panggilan -->
+        <div class="form-group">
+          <label for="namaPanggilan">Nama Panggilan:</label>
+          <input type="text" name="namaPanggilan" id="namaPanggilan" required />
+        </div>
+
+        <!-- No IC -->
+        <div class="form-group">
+          <label for="ic">No IC:</label>
+          <input type="text" name="ic" id="ic" required />
+        </div>
+
+        <!-- Telefon -->
+        <div class="form-group">
+          <label for="telefon">No Telefon Peserta:</label>
+          <input type="tel" name="telefon" id="telefon" required placeholder="60123456789" />
+        </div>
+
+        <!-- Tarikh Daftar (Auto) -->
+        <div class="form-group">
+          <label for="tarikhDaftar">Tarikh Daftar:</label>
+          <input type="date" name="tarikhDaftar" id="tarikhDaftar" required />
+        </div>
+
+        <!-- Baucer Dimenangi -->
+        <div class="form-group">
+          <label for="baucer">Baucer Dimenangi (jika ada):</label>
+          <input list="voucherList" name="baucer" id="baucer" placeholder="Taip untuk cadangan..." />
+          <datalist id="voucherList">
+            <option value="consultation discount RM5">
+            <option value="consultation discount RM10">
+            <option value="consultation discount RM15">
+            <option value="consultation free">
+            <option value="ECG discount RM5">
+            <option value="ECG discount RM10">
+            <option value="ECG discount RM15">
+            <option value="ECG Free">
+            <option value="Audiometry discount RM5">
+            <option value="Audiometry Discount RM10">
+            <option value="Audiometry Discount RM15">
+            <option value="Audiometry Free">
+            <option value="Scan (Abd/Pregnant) Discount 5">
+            <option value="Scan (Abd/pregnant) discount RM10">
+            <option value="scan (Abd/Pregnant) discount RM15">
+            <option value="Scan (Abd/pregnant) Free">
+            <option value="HBA1c discount RM5">
+            <option value="HBA1c discount RM10">
+            <option value="HBA1c discount RM15">
+            <option value="Suction / Nebulizer Discount RM5">
+            <option value="Suction / Nebulizer discount RM10">
+            <option value="Suction / Nebulizer discount RM15">
+            <option value="Fbc dicount RM5">
+            <option value="fbc discount RM10">
+            <option value="IV drip discount RM5">
+            <option value="IV drip discount RM10">
+            <option value="IV drip discount RM15">
+            <option value="Blood taking BHS-1 RM50 only">
+            <option value="Susu Farm Fresh Free (2 kotak)">
+            <option value="Free Baju T-shirt">
+            <option value="Free Jug">
+            <option value="Free tupperware">
+          </datalist>
+        </div>
+
+        <button type="submit">Hantar</button>
+      </form>
+    </div>
+
+    <!-- Paparan Hasil Carian (Kanan) -->
+    <div id="searchResult">
+      <h3>Maklumat Pelanggan</h3>
+      <div id="searchContent"></div>
+    </div>
+    
+  </div> <!-- /page-content -->
 
   <script>
     // 1) Set tarikh semasa pada kolom "tarikhDaftar"
@@ -271,6 +311,7 @@
         if(result.status === "success") {
           // Tunjuk notifikasi tick hijau
           successToast.style.display = 'block';
+
           // Reset form
           staffForm.reset();
           // Tetapkan semula tarikh
@@ -300,7 +341,7 @@
       }
 
       // Buat panggilan AJAX ke Apps Script (contoh)
-      // Di Apps Script, anda perlu menulis logik doGet/doPost yang terima param IC dan balas maklumat.
+      // Pastikan doGet/doPost di Apps Script menyokong pencarian IC
       try {
         // Contoh: "type=search" menandakan kita mahu cari
         const url = GAS_URL + "?type=search&ic=" + encodeURIComponent(icVal);
