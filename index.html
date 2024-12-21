@@ -12,6 +12,7 @@
       padding: 20px;
       margin: 0;
     }
+
     .container {
       max-width: 400px;
       margin: 40px auto;
@@ -22,14 +23,17 @@
       position: relative;
       text-align: left; /* Supaya label & input rapat ke kiri */
     }
+
     h1 {
       margin-bottom: 20px;
       font-size: 1.4em;
       text-align: center;
     }
+
     .form-group {
       margin-bottom: 15px;
     }
+
     .form-group label {
       display: block;
       margin-bottom: 5px;
@@ -37,6 +41,7 @@
       color: #555;
       font-size: 0.95em;
     }
+
     .form-group input[type="text"],
     .form-group input[type="tel"],
     .form-group input[type="date"],
@@ -49,6 +54,7 @@
       font-size: 0.95em;
       box-sizing: border-box;
     }
+
     button {
       background: #008cba;
       color: #fff;
@@ -60,6 +66,7 @@
       width: 100%;
       margin-top: 10px;
     }
+
     button:hover {
       background: #005f6a;
     }
@@ -73,21 +80,12 @@
       color: #fff;
       padding: 12px 20px;
       border-radius: 5px;
-      display: none; /* mula-mula disorok */
+      display: none; /* Mula-mula disorok */
       font-size: 0.95em;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
       z-index: 9999;
     }
-    /* Animasi ringkas fade-out */
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-    .show-toast {
-      display: block;
-      animation: fadeOut 2s 1.5s forwards; 
-      /* Mula fadeOut selepas 1.5s, siap animasi total 3.5s */
-    }
+
     .tick-icon {
       margin-right: 8px;
       font-weight: bold;
@@ -157,9 +155,9 @@
           <option value="HBA1c discount RM5">
           <option value="HBA1c discount RM10">
           <option value="HBA1c discount RM15">
-          <option value="Suction Discount RM5">
-          <option value="Suction discount RM10">
-          <option value="Suction discount RM15">
+          <option value="Suction / Nebulizer Discount RM5">
+          <option value="Suction / Nebulizer discount RM10">
+          <option value="Suction / Nebulizer discount RM15">
           <option value="Fbc dicount RM5">
           <option value="fbc discount RM10">
           <option value="IV drip discount RM5">
@@ -200,13 +198,14 @@
 
         if(result.status === "success") {
           // 1) Tunjuk notifikasi tick hijau
-          successToast.classList.add('show-toast');
-          // 2) Reset form
+          successToast.style.display = 'block'; 
+          // 2) Reset form untuk pendaftaran seterusnya
           staffForm.reset();
-          // 3) Sembunyikan notifikasi selepas animasi fadeOut
+
+          // 3) Sembunyikan semula notifikasi selepas beberapa saat
           setTimeout(() => {
-            successToast.classList.remove('show-toast');
-          }, 4000); // 4s (2s anim, 2s fade)
+            successToast.style.display = 'none';
+          }, 3000); // 3 saat
         } else {
           alert(result.message || "Ralat tidak diketahui.");
         }
