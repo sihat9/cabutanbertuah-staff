@@ -162,6 +162,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       display: none;
       animation: fadeIn 0.4s ease-in-out;
+      position: relative; /* supaya boleh letak button X */
     }
     #searchResult h3 {
       margin-top: 0;
@@ -170,7 +171,24 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 8px;
       font-weight: 600;
+      margin-right: 30px; /* beri ruang sikit utk butang X */
     }
+    /* Tombol X di penjuru atas kanan container #searchResult */
+    #closeSearchResult {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      color: #aaa;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    #closeSearchResult:hover {
+      color: #666;
+    }
+
     #searchContent p {
       line-height: 1.5em;
       margin: 10px 0;
@@ -307,6 +325,8 @@
 
     <!-- Paparan Hasil Carian (Kanan) -->
     <div id="searchResult">
+      <!-- Tombol X (tutup) -->
+      <button id="closeSearchResult">x</button>
       <h3>Maklumat Pelanggan</h3>
       <div id="searchContent"></div>
     </div>
@@ -325,7 +345,7 @@
     });
 
     // 2) Gantikan dengan URL Web App Google Apps Script anda
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxODgvgBITLnxFsYZ67kv7s1W7u1n9kyY11IWgG68OW0mzGkIJfhylRDAMKEA2uem63/exec";
+    const GAS_URL = "https://script.google.com/macros/s/YOUR_GAS_DEPLOYMENT_ID/exec";
 
     // Komponen
     const staffForm = document.getElementById('staffForm');
@@ -334,6 +354,7 @@
     const btnSearch = document.getElementById('btnSearch');
     const searchResult = document.getElementById('searchResult');
     const searchContent = document.getElementById('searchContent');
+    const closeSearchResult = document.getElementById('closeSearchResult');
 
     // =============== FUNGSI: Submit Form ===============
     staffForm.addEventListener('submit', async function(e){
@@ -418,6 +439,12 @@
       } catch (err) {
         alert("Ralat semasa mencari: " + err.toString());
       }
+    });
+
+    // =============== FUNGSI: Tutup Paparan Carian ===============
+    closeSearchResult.addEventListener('click', function(){
+      searchResult.style.display = 'none';
+      searchContent.innerHTML = '';
     });
   </script>
 </body>
