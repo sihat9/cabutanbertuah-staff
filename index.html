@@ -195,7 +195,7 @@
       color: #444;
     }
 
-    /* Tombol Tebus dan Label Voucher Expired */
+    /* Tombol Tebus dan Label Voucher Expired/Sudah Ditebus */
     .tebus-button {
       background-color: #28a745; /* Hijau */
       color: #fff;
@@ -213,6 +213,16 @@
     }
     .expired-label {
       background-color: #dc3545; /* Merah */
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1em;
+      font-weight: 500;
+      margin-top: 10px;
+      display: inline-block;
+    }
+    .redeemed-label {
+      background-color: #6c757d; /* Kelabu */
       color: #fff;
       padding: 10px 20px;
       border-radius: 5px;
@@ -463,25 +473,30 @@
           const tarikhTamat = result.tarikhTamat || "-";
           let baucer = result.baucer || "Tiada memenangi baucer";
           const kekerapan = result.kekerapan || 0;
+          const redeemed = result.redeemed || false;
 
           // Tentukan status voucher
           let voucherButton = "";
-          if (tarikhTamat !== "-") {
-            const today = new Date();
-            const [dd, mm, yyyy] = tarikhTamat.split("/");
-            const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
-            tarikhTamatObj.setHours(0,0,0,0);
-            today.setHours(0,0,0,0);
+          if (!redeemed) { // Voucher masih aktif
+            if (tarikhTamat !== "-") {
+              const today = new Date();
+              const [dd, mm, yyyy] = tarikhTamat.split("/");
+              const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
+              tarikhTamatObj.setHours(0,0,0,0);
+              today.setHours(0,0,0,0);
 
-            if (tarikhTamatObj >= today) {
-              // Voucher masih valid
-              voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus</button>`;
+              if (tarikhTamatObj >= today) {
+                // Voucher masih valid
+                voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus</button>`;
+              } else {
+                // Voucher telah tamat
+                voucherButton = `<span class="expired-label">Voucher Expired</span>`;
+              }
             } else {
-              // Voucher telah tamat
-              voucherButton = `<span class="expired-label">Voucher Expired</span>`;
+              voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
             }
-          } else {
-            voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
+          } else { // Voucher telah ditebus
+            voucherButton = `<span class="redeemed-label">Sudah Ditebus</span>`;
           }
 
           // Papar
@@ -520,7 +535,7 @@
       try {
         const params = new URLSearchParams();
         params.append('type', 'delete');
-        params.append('ic', icNumber);
+        params.append('ic', icNumber.trim()); // Pastikan trim sebelum menghantar
 
         const response = await fetch(GAS_URL, {
           method: 'POST',
