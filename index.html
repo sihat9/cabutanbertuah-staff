@@ -195,12 +195,39 @@
       color: #444;
     }
 
+    /* Tombol Tebus dan Label Voucher Expired */
+    .tebus-button {
+      background-color: #28a745; /* Hijau */
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 500;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    .tebus-button:hover {
+      background-color: #218838;
+    }
+    .expired-label {
+      background-color: #dc3545; /* Merah */
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1em;
+      font-weight: 500;
+      margin-top: 10px;
+      display: inline-block;
+    }
+
     /* ========== NOTIFIKASI (tick hijau) ========== */
     #successToast {
       position: fixed;
       top: 25px;
       right: 25px;
-      background: #43b047; /* hijau sedikit lembut */
+      background: #43b047; /* Hijau sedikit lembut */
       color: #fff;
       padding: 14px 20px;
       border-radius: 5px;
@@ -382,7 +409,7 @@
       try {
         const response = await fetch(GAS_URL, {
           method: 'POST',
-          body: formData
+          body: new URLSearchParams(formData) // Tukar FormData ke URLSearchParams
         });
         const result = await response.json();
 
@@ -418,9 +445,8 @@
         return;
       }
 
-      // Buat panggilan AJAX ke Apps Script (contoh)
+      // Buat panggilan AJAX ke Apps Script dengan jenis 'search'
       try {
-        // type=search menandakan kita mahu cari
         const url = GAS_URL + "?type=search&ic=" + encodeURIComponent(icVal);
         const res = await fetch(url);
         const result = await res.json();
@@ -436,6 +462,28 @@
           const tarikhDaftar = result.tarikhDaftar || "-";
           const tarikhTamat = result.tarikhTamat || "-";
           let baucer = result.baucer || "Tiada memenangi baucer";
+          const kekerapan = result.kekerapan || 0;
+
+          // Tentukan status voucher
+          let statusVoucher = "";
+          let voucherButton = "";
+          if (tarikhTamat !== "-") {
+            const today = new Date();
+            const [dd, mm, yyyy] = tarikhTamat.split("/");
+            const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
+            tarikhTamatObj.setHours(0,0,0,0);
+            today.setHours(0,0,0,0);
+
+            if (tarikhTamatObj >= today) {
+              // Voucher masih valid
+              voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus</button>`;
+            } else {
+              // Voucher telah tamat
+              voucherButton = `<span class="expired-label">Voucher Expired</span>`;
+            }
+          } else {
+            voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
+          }
 
           // Papar
           searchResult.style.display = 'block';
@@ -445,9 +493,11 @@
             <p><b>Tarikh Daftar:</b> ${tarikhDaftar}</p>
             <p><b>Tarikh Tamat Valid:</b> ${tarikhTamat}</p>
             <p><b>Voucher:</b> ${baucer}</p>
+            <p><b>Kekerapan Sertai Program:</b> ${kekerapan} kali</p>
+            ${voucherButton}
           `;
         } else {
-          // status lain
+          // Status lain
           searchResult.style.display = 'block';
           searchContent.innerHTML = `<p>Ralat: ${result.message}</p>`;
         }
@@ -461,6 +511,35 @@
       searchResult.style.display = 'none';
       searchContent.innerHTML = '';
     });
+
+    // =============== FUNGSI: Tebus Voucher ===============
+    async function tebusVoucher(icNumber) {
+      if (!confirm("Adakah anda pasti mahu menebus voucher ini?")) {
+        return;
+      }
+
+      try {
+        const params = new URLSearchParams();
+        params.append('type', 'delete');
+        params.append('ic', icNumber);
+
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: params
+        });
+        const result = await response.json();
+
+        if(result.status === "success") {
+          alert(result.message || "Voucher telah berjaya ditebus dan data telah dipadam.");
+          // Refresh paparan carian
+          document.getElementById('btnSearch').click();
+        } else {
+          alert(result.message || "Ralat tidak diketahui semasa menebus voucher.");
+        }
+      } catch (err) {
+        alert("Ralat semasa menebus voucher: " + err.toString());
+      }
+    }
   </script>
 </body>
 </html>
