@@ -252,6 +252,42 @@
       font-weight: bold;
     }
 
+    /* ========== LOADING OVERLAY ========== */
+    #loadingOverlay {
+      display: none; /* Mula-mula disorokkan */
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 9998; /* Letak bawah sedikit dari successToast */
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 6px solid #ccc;
+      border-top: 6px solid #007FFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading-text {
+      margin-top: 12px;
+      font-size: 1em;
+      color: #333;
+      background: #fff;
+      padding: 6px 12px;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
     /* Responsif jika skrin lebih kecil */
     @media (max-width: 768px) {
       .page-content {
@@ -277,6 +313,12 @@
   <!-- Notifikasi "Tick Hijau" -->
   <div id="successToast">
     <span class="tick-icon">✔</span> Maklumat berjaya dihantar!
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Sedang mencari...</div>
   </div>
 
   <!-- Kandungan Halaman (2 kolum) -->
@@ -393,9 +435,18 @@
     const searchResult = document.getElementById('searchResult');
     const searchContent = document.getElementById('searchContent');
     const closeSearchResult = document.getElementById('closeSearchResult');
+    const phoneInput = document.getElementById('telefon');
+
+    // Loading Overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    function showLoadingOverlay() {
+      loadingOverlay.style.display = 'flex';
+    }
+    function hideLoadingOverlay() {
+      loadingOverlay.style.display = 'none';
+    }
 
     // 3) Pastikan No Telefon bermula dengan '6'
-    const phoneInput = document.getElementById('telefon');
     phoneInput.addEventListener('focus', function(){
       if (this.value.trim() === '') {
         this.value = '6';
@@ -454,6 +505,9 @@
         alert("Sila masukkan No IC untuk cari.");
         return;
       }
+
+      // Papar overlay "loading" sebelum mula fetch
+      showLoadingOverlay();
 
       // Buat panggilan AJAX ke Apps Script dengan jenis 'search'
       try {
@@ -517,6 +571,9 @@
         }
       } catch (err) {
         alert("Ralat semasa mencari: " + err.toString());
+      } finally {
+        // Sembunyikan overlay "loading" sama ada berjaya atau gagal
+        hideLoadingOverlay();
       }
     });
 
