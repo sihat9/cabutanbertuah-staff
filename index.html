@@ -49,7 +49,7 @@
     }
     .search-box input[type="text"] {
       padding: 10px;
-      border: 2px solid #007FFF; 
+      border: 2px solid #007FFF; /* Border lebih tebal dan warna biru */
       border-radius: 6px;
       font-size: 1em;
       min-width: 220px;
@@ -57,7 +57,7 @@
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
       background: #eef7ff; /* Sedikit warna kebiruan */
-      box-shadow: 0 0 4px rgba(0,127,255,0.2);
+      box-shadow: 0 0 4px rgba(0,127,255,0.2); 
     }
     .search-box input[type="text"]:focus {
       border-color: #0056a6;
@@ -308,7 +308,6 @@
   <div class="top-bar">
     <h1>Daftar Peserta (Staff) - Klinik SihatSokmo</h1>
     <div class="search-box">
-      <!-- Ruangan input dengan event "keydown" utk detect 'Enter' -->
       <input type="text" id="searchIc" placeholder="Cari No IC" />
       <button id="btnSearch">Cari</button>
     </div>
@@ -538,8 +537,7 @@
     });
 
     // =============== FUNGSI: Cari No IC ===============
-
-    // 4) Tekan ENTER untuk cari 
+    // Tambah event listener untuk tekan Enter
     searchIcInput.addEventListener('keydown', function(e){
       if(e.key === "Enter") {
         e.preventDefault(); 
@@ -554,7 +552,7 @@
         return;
       }
 
-      // Papar overlay "loading" sebelum mula fetch
+      // Tunjuk overlay loading sebelum mula fetch
       showLoadingOverlay();
 
       // Buat panggilan AJAX ke Apps Script dengan jenis 'search'
@@ -637,7 +635,7 @@
       } catch (err) {
         alert("Ralat semasa mencari: " + err.toString());
       } finally {
-        // Sembunyikan overlay "loading" sama ada berjaya atau gagal
+        // Tutup overlay loading sama ada berjaya atau gagal
         hideLoadingOverlay();
       }
     });
