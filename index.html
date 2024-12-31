@@ -41,7 +41,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Cari IC Box (bahagian kanan top-bar) */
+    /* ========== CARI IC (TIMBUL & MENONJOL) ========== */
     .search-box {
       display: flex;
       align-items: center;
@@ -49,16 +49,19 @@
     }
     .search-box input[type="text"] {
       padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 0.95em;
-      min-width: 160px;
+      border: 2px solid #007FFF; 
+      border-radius: 6px;
+      font-size: 1em;
+      min-width: 220px;
       box-sizing: border-box;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #eef7ff; /* Sedikit warna kebiruan */
+      box-shadow: 0 0 4px rgba(0,127,255,0.2); 
     }
     .search-box input[type="text"]:focus {
-      border-color: #007FFF;
+      border-color: #0056a6;
+      box-shadow: 0 0 6px rgba(0,127,255,0.3);
     }
     .search-box button {
       background: #4a4a4a;
@@ -305,6 +308,7 @@
   <div class="top-bar">
     <h1>Daftar Peserta (Staff) - Klinik SihatSokmo</h1>
     <div class="search-box">
+      <!-- Ruangan input dengan event "keydown" utk detect 'Enter' -->
       <input type="text" id="searchIc" placeholder="Cari No IC" />
       <button id="btnSearch">Cari</button>
     </div>
@@ -436,9 +440,9 @@
     const searchContent = document.getElementById('searchContent');
     const closeSearchResult = document.getElementById('closeSearchResult');
     const phoneInput = document.getElementById('telefon');
-
-    // Loading Overlay
     const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Fungsi Overlay
     function showLoadingOverlay() {
       loadingOverlay.style.display = 'flex';
     }
@@ -499,6 +503,15 @@
     });
 
     // =============== FUNGSI: Cari No IC ===============
+
+    // 3.1) Tekan ENTER untuk cari 
+    searchIcInput.addEventListener('keydown', function(e){
+      if(e.key === "Enter") {
+        e.preventDefault(); 
+        btnSearch.click(); // Panggil fungsi butang 'Cari'
+      }
+    });
+
     btnSearch.addEventListener('click', async function(){
       const icVal = searchIcInput.value.trim();
       if (!icVal) {
