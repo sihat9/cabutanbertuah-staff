@@ -41,27 +41,27 @@
       letter-spacing: 0.5px;
     }
 
-    /* Cari IC Box (bahagian kanan top-bar) */
+    /* ========== CARI IC (TIMBUL & MENONJOL) ========== */
     .search-box {
       display: flex;
       align-items: center;
       gap: 6px;
-      position: relative; /* Untuk penempatan loader */
     }
     .search-box input[type="text"] {
       padding: 10px;
-      border: 2px solid #007FFF; /* Lebih menonjol dengan warna biru */
-      border-radius: 4px;
-      font-size: 0.95em;
-      min-width: 160px;
+      border: 2px solid #007FFF; 
+      border-radius: 6px;
+      font-size: 1em;
+      min-width: 220px;
       box-sizing: border-box;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
-      box-shadow: 0 0 5px rgba(0, 127, 255, 0.5);
+      background: #eef7ff; /* Sedikit warna kebiruan */
+      box-shadow: 0 0 4px rgba(0,127,255,0.2);
     }
     .search-box input[type="text"]:focus {
-      border-color: #005bb5;
-      box-shadow: 0 0 10px rgba(0, 127, 255, 0.7);
+      border-color: #0056a6;
+      box-shadow: 0 0 6px rgba(0,127,255,0.3);
     }
     .search-box button {
       background: #4a4a4a;
@@ -72,30 +72,9 @@
       cursor: pointer;
       font-size: 0.95em;
       transition: background 0.2s;
-      position: relative; /* Untuk penempatan loader */
     }
     .search-box button:hover {
       background: #333;
-    }
-
-    /* Loader untuk Cari No IC */
-    .loader {
-      border: 4px solid #f3f3f3; /* Light grey */
-      border-top: 4px solid #007FFF; /* Biru */
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      position: absolute;
-      right: -30px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: none; /* Sembunyikan secara default */
-    }
-
-    @keyframes spin {
-      0% { transform: translateY(-50%) rotate(0deg); }
-      100% { transform: translateY(-50%) rotate(360deg); }
     }
 
     /* ========== KANDUNGAN ========== */
@@ -170,26 +149,10 @@
       margin-top: 10px;
       width: 100%;
       font-weight: 500;
-      position: relative; /* Untuk penempatan spinner */
       transition: background 0.2s;
     }
     button[type="submit"]:hover {
       background: #036BCE;
-    }
-
-    /* Spinner dalam tombol Hantar */
-    .spinner {
-      border: 4px solid #f3f3f3; /* Light grey */
-      border-top: 4px solid #fff; /* Putih */
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: none; /* Sembunyikan secara default */
     }
 
     /* ========== PAPARAN CARIAN (KANAN) ========== */
@@ -292,12 +255,40 @@
       font-weight: bold;
     }
 
-    /* Loader untuk form submit */
-    button[type="submit"].loading .spinner {
-      display: block;
+    /* ========== LOADING OVERLAY ========== */
+    #loadingOverlay {
+      display: none; /* Mula-mula disorokkan */
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 9998; /* Letak bawah sedikit dari successToast */
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
     }
-    button[type="submit"].loading span {
-      display: none;
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 6px solid #ccc;
+      border-top: 6px solid #007FFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading-text {
+      margin-top: 12px;
+      font-size: 1em;
+      color: #333;
+      background: #fff;
+      padding: 6px 12px;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     /* Responsif jika skrin lebih kecil */
@@ -317,15 +308,21 @@
   <div class="top-bar">
     <h1>Daftar Peserta (Staff) - Klinik SihatSokmo</h1>
     <div class="search-box">
+      <!-- Ruangan input dengan event "keydown" utk detect 'Enter' -->
       <input type="text" id="searchIc" placeholder="Cari No IC" />
       <button id="btnSearch">Cari</button>
-      <div class="loader" id="searchLoader"></div> <!-- Loader untuk Cari No IC -->
     </div>
   </div>
 
   <!-- Notifikasi "Tick Hijau" -->
   <div id="successToast">
     <span class="tick-icon">✔</span> Maklumat berjaya dihantar!
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Sedang memproses...</div>
   </div>
 
   <!-- Kandungan Halaman (2 kolum) -->
@@ -406,10 +403,7 @@
           </datalist>
         </div>
 
-        <button type="submit" id="submitBtn">
-          <span>Hantar</span>
-          <div class="spinner"></div> <!-- Spinner untuk tombol Hantar -->
-        </button>
+        <button type="submit">Hantar</button>
       </form>
     </div>
 
@@ -424,6 +418,36 @@
   </div> <!-- /page-content -->
 
   <script>
+    // Fungsi Pembantu untuk Memformat Tarikh ke dd/mm/yyyy
+    function formatDate(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') {
+        return '-';
+      }
+
+      let dateObj;
+
+      // Cek jika tarikh dalam format YYYY-MM-DD atau ISO string
+      if (dateStr.includes('-')) {
+        dateObj = new Date(dateStr);
+      } else if (dateStr.includes('/')) {
+        // Jika dalam format dd/mm/yyyy
+        const [dd, mm, yyyy] = dateStr.split('/');
+        dateObj = new Date(`${yyyy}-${mm}-${dd}`);
+      } else {
+        return '-';
+      }
+
+      if (isNaN(dateObj)) {
+        return '-';
+      }
+
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0'); // Bulan bermula dari 0
+      const yyyy = dateObj.getFullYear();
+
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
     // 1) Set tarikh semasa pada kolom "tarikhDaftar"
     document.addEventListener("DOMContentLoaded", function(){
       const dateInput = document.getElementById('tarikhDaftar');
@@ -445,11 +469,18 @@
     const searchResult = document.getElementById('searchResult');
     const searchContent = document.getElementById('searchContent');
     const closeSearchResult = document.getElementById('closeSearchResult');
-    const searchLoader = document.getElementById('searchLoader');
-    const submitBtn = document.getElementById('submitBtn');
+    const phoneInput = document.getElementById('telefon');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Fungsi Overlay
+    function showLoadingOverlay() {
+      loadingOverlay.style.display = 'flex';
+    }
+    function hideLoadingOverlay() {
+      loadingOverlay.style.display = 'none';
+    }
 
     // 3) Pastikan No Telefon bermula dengan '6'
-    const phoneInput = document.getElementById('telefon');
     phoneInput.addEventListener('focus', function(){
       if (this.value.trim() === '') {
         this.value = '6';
@@ -466,9 +497,8 @@
     // =============== FUNGSI: Submit Form ===============
     staffForm.addEventListener('submit', async function(e){
       e.preventDefault(); 
-
-      // Tunjuk spinner dalam tombol Hantar
-      submitBtn.classList.add('loading');
+      // Tunjuk overlay loading
+      showLoadingOverlay();
 
       // Kumpul data
       const formData = new FormData(staffForm);
@@ -502,12 +532,21 @@
       } catch (err) {
         alert("Ralat: " + err.toString());
       } finally {
-        // Sembunyikan spinner dalam tombol Hantar
-        submitBtn.classList.remove('loading');
+        // Tutup overlay loading
+        hideLoadingOverlay();
       }
     });
 
     // =============== FUNGSI: Cari No IC ===============
+
+    // 4) Tekan ENTER untuk cari 
+    searchIcInput.addEventListener('keydown', function(e){
+      if(e.key === "Enter") {
+        e.preventDefault(); 
+        btnSearch.click(); // Panggil fungsi butang 'Cari'
+      }
+    });
+
     btnSearch.addEventListener('click', async function(){
       const icVal = searchIcInput.value.trim();
       if (!icVal) {
@@ -515,9 +554,8 @@
         return;
       }
 
-      // Tunjuk loader
-      searchLoader.style.display = 'block';
-      btnSearch.disabled = true;
+      // Papar overlay "loading" sebelum mula fetch
+      showLoadingOverlay();
 
       // Buat panggilan AJAX ke Apps Script dengan jenis 'search'
       try {
@@ -533,40 +571,57 @@
           // Terdapat rekod
           const nama = result.nama || "Tidak diketahui";
           const noIc = result.ic || icVal;
-          const tarikhDaftar = result.tarikhDaftar || "-";
-          const tarikhTamat = result.tarikhTamat || "-";
+          let tarikhDaftar = result.tarikhDaftar || "-";
+          let tarikhTamat = result.tarikhTamat || "-";
           let baucer = result.baucer || "Tiada memenangi baucer";
           const kekerapan = result.kekerapan || 0;
           const redeemed = result.redeemed || false;
 
-          // Tentukan status voucher
-          let voucherButton = "";
-          if (!redeemed) { // Voucher masih aktif
-            if (tarikhTamat !== "-") {
-              const today = new Date();
-              const [dd, mm, yyyy] = tarikhTamat.split("/");
-              const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
-              tarikhTamatObj.setHours(0,0,0,0);
-              today.setHours(0,0,0,0);
+          // Format semula tarikhDaftar dan tarikhTamat
+          tarikhDaftar = formatDate(tarikhDaftar);
+          tarikhTamat = formatDate(tarikhTamat);
 
-              if (tarikhTamatObj >= today) {
-                // Voucher masih valid
-                voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus Baucer</button>`;
+          // ===== Tentukan status voucher (masih valid / tamat / telah ditebus)
+          let voucherButton = "";
+          if (!redeemed) {
+            if (tarikhTamat !== "-") {
+              // Buat semula Date() untuk perbandingan
+              // (Guna tarikhTamat yg telah diformat semula dd/mm/yyyy)
+              const parts = tarikhTamat.split("/");
+              // Pastikan susunan [DD, MM, YYYY]
+              if (parts.length === 3) {
+                const dd = parts[0];
+                const mm = parts[1];
+                const yyyy = parts[2];
+                const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
+                tarikhTamatObj.setHours(0,0,0,0);
+
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                if (tarikhTamatObj >= today) {
+                  // Voucher masih valid
+                  voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus Baucer</button>`;
+                } else {
+                  // Voucher telah tamat
+                  voucherButton = `<span class="expired-label">Baucer Tamat Tempoh</span>`;
+                }
               } else {
-                // Voucher telah tamat
-                voucherButton = `<span class="expired-label">Baucer Tamat Tempoh</span>`;
+                // Format tarikh tak normal - anggap tiada baucer
+                voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
               }
             } else {
               voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
             }
-          } else { // Voucher telah ditebus
+          } else {
+            // Voucher telah ditebus
             voucherButton = `<span class="redeemed-label">Sudah Ditebus</span>`;
           }
 
           // Papar
           searchResult.style.display = 'block';
-          searchContent.innerHTML = 
-            `<p><b>Nama:</b> ${nama}</p>
+          searchContent.innerHTML = `
+            <p><b>Nama:</b> ${nama}</p>
             <p><b>No IC:</b> ${noIc}</p>
             <p><b>Tarikh Daftar:</b> ${tarikhDaftar}</p>
             <p><b>Tarikh Tamat Valid:</b> ${tarikhTamat}</p>
@@ -582,9 +637,8 @@
       } catch (err) {
         alert("Ralat semasa mencari: " + err.toString());
       } finally {
-        // Sembunyikan loader
-        searchLoader.style.display = 'none';
-        btnSearch.disabled = false;
+        // Sembunyikan overlay "loading" sama ada berjaya atau gagal
+        hideLoadingOverlay();
       }
     });
 
@@ -601,6 +655,9 @@
       }
 
       try {
+        // Papar overlay loading semasa proses tebus voucher
+        showLoadingOverlay();
+
         const params = new URLSearchParams();
         params.append('type', 'delete');
         params.append('ic', icNumber.trim()); // Pastikan trim sebelum menghantar
@@ -620,6 +677,9 @@
         }
       } catch (err) {
         alert("Ralat semasa menebus voucher: " + err.toString());
+      } finally {
+        // Tutup overlay loading
+        hideLoadingOverlay();
       }
     }
   </script>
