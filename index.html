@@ -57,7 +57,7 @@
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
       background: #eef7ff; /* Sedikit warna kebiruan */
-      box-shadow: 0 0 4px rgba(0,127,255,0.2); 
+      box-shadow: 0 0 4px rgba(0,127,255,0.2);
     }
     .search-box input[type="text"]:focus {
       border-color: #0056a6;
@@ -322,7 +322,7 @@
   <!-- LOADING OVERLAY -->
   <div id="loadingOverlay">
     <div class="spinner"></div>
-    <div class="loading-text">Sedang mencari...</div>
+    <div class="loading-text">Sedang memproses...</div>
   </div>
 
   <!-- Kandungan Halaman (2 kolum) -->
@@ -467,6 +467,8 @@
     // =============== FUNGSI: Submit Form ===============
     staffForm.addEventListener('submit', async function(e){
       e.preventDefault(); 
+      // Tunjuk overlay loading
+      showLoadingOverlay();
 
       // Kumpul data
       const formData = new FormData(staffForm);
@@ -499,12 +501,15 @@
         }
       } catch (err) {
         alert("Ralat: " + err.toString());
+      } finally {
+        // Tutup overlay loading
+        hideLoadingOverlay();
       }
     });
 
     // =============== FUNGSI: Cari No IC ===============
 
-    // 3.1) Tekan ENTER untuk cari 
+    // 4) Tekan ENTER untuk cari 
     searchIcInput.addEventListener('keydown', function(e){
       if(e.key === "Enter") {
         e.preventDefault(); 
@@ -536,33 +541,59 @@
           // Terdapat rekod
           const nama = result.nama || "Tidak diketahui";
           const noIc = result.ic || icVal;
-          const tarikhDaftar = result.tarikhDaftar || "-";
-          const tarikhTamat = result.tarikhTamat || "-";
+          let tarikhDaftar = result.tarikhDaftar || "-";
+          let tarikhTamat = result.tarikhTamat || "-";
           let baucer = result.baucer || "Tiada memenangi baucer";
           const kekerapan = result.kekerapan || 0;
           const redeemed = result.redeemed || false;
 
-          // Tentukan status voucher
-          let voucherButton = "";
-          if (!redeemed) { // Voucher masih aktif
-            if (tarikhTamat !== "-") {
-              const today = new Date();
-              const [dd, mm, yyyy] = tarikhTamat.split("/");
-              const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
-              tarikhTamatObj.setHours(0,0,0,0);
-              today.setHours(0,0,0,0);
+          // ===== Format semula tarikhTamat jika ia dalam bentuk ISO (contoh: 2025-01-01T16:00:00.000Z)
+          if (tarikhTamat !== "-") {
+            // Cuba parse jadi objek tarikh
+            const dt = new Date(tarikhTamat);
+            // Asalkan dt valid, ubah kpd dd/mm/yyyy
+            if (!isNaN(dt)) {
+              const dd = String(dt.getDate()).padStart(2, '0');
+              const mm = String(dt.getMonth() + 1).padStart(2, '0');
+              const yyyy = dt.getFullYear();
+              tarikhTamat = `${dd}/${mm}/${yyyy}`;
+            }
+          }
 
-              if (tarikhTamatObj >= today) {
-                // Voucher masih valid
-                voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus Baucer</button>`;
+          // ===== Tentukan status voucher (masih valid / tamat / telah ditebus)
+          let voucherButton = "";
+          if (!redeemed) {
+            if (tarikhTamat !== "-") {
+              // Buat semula Date() untuk perbandingan
+              // (Guna tarikhTamat yg mungkin telah diformat semula dd/mm/yyyy)
+              const parts = tarikhTamat.split("/");
+              // Pastikan susunan [DD, MM, YYYY]
+              if (parts.length === 3) {
+                const dd = parts[0];
+                const mm = parts[1];
+                const yyyy = parts[2];
+                const tarikhTamatObj = new Date(`${yyyy}-${mm}-${dd}`);
+                tarikhTamatObj.setHours(0,0,0,0);
+
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                if (tarikhTamatObj >= today) {
+                  // Voucher masih valid
+                  voucherButton = `<button class="tebus-button" onclick="tebusVoucher('${noIc}')">Tebus Baucer</button>`;
+                } else {
+                  // Voucher telah tamat
+                  voucherButton = `<span class="expired-label">Baucer Tamat Tempoh</span>`;
+                }
               } else {
-                // Voucher telah tamat
-                voucherButton = `<span class="expired-label">Baucer Tamat Tempoh</span>`;
+                // Format tarikh tak normal - anggap tiada baucer
+                voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
               }
             } else {
               voucherButton = `<span class="expired-label">Tiada Baucer</span>`;
             }
-          } else { // Voucher telah ditebus
+          } else {
+            // Voucher telah ditebus
             voucherButton = `<span class="redeemed-label">Sudah Ditebus</span>`;
           }
 
